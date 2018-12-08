@@ -24,7 +24,7 @@ L3 = 24 * 0.0254  #2 ft
 
 #Pressure
 P_atm = 101325
-P_0 = 110 * 6894.76 + P_atm #pressure that we fill chamber up to
+P_0 = 110 * 6894.76 + P_atm #pressure that we fill chamber up to = 110 psi + 1atm (absolute)
 
 #Temp
 T = 293.15  #Kelvin
@@ -32,7 +32,7 @@ T = 293.15  #Kelvin
 #step size
 dr = 0.001 # 1mm
 dtheta = 45 # degrees
-dz = dr  # 1mm
+dz = dr  # 1mm_ initial dz
 dt = 0.001 #s
 t_max = 10 #s
 
@@ -50,67 +50,36 @@ air_atm = ct.Solution('air.xml')
 '''
 1-d Analysis
 '''
-z_points = np.arange(0,L1+L2+L3,dz)
+#create table to save data in
+fluid_elements = {'zloc':np.arange(dz/2,L1+L2,dz),'dz':dz}
+fluid_elements = pd.DataFrame(fluid_elements)
+fluid_elements['area'] = [A1 if z <= L1 else A2 if z<=L1+L2 else A3 for z in fluid_elements.zloc]
+fluid_elements['press'] = [P_0 if z <= L1 else P_atm for z in fluid_elements.zloc]
+#fluid_elements.state = [ct.Solution('air.xml') for i in fluid_elements.index]
 
-## to do: make these using list comprehension
-## to do: turn these all into another datatype.  Maybe a pandas array
-P_list = []
-for point in z_points:
-    if point <=L1:
-        P_list.append(P_0)
-    else:
-        P_list.append(P_atm)
-        
-air = ct.Solution('air.xml')
-cantera_list = []
-for point in range(len(z_points)):
-    if z_points[point] <=L1:
-        air.TP = T,P_0
-    else:
-        air.TP = T,P_0
-    cantera_list.append(air)
-
-v_list = []
-for point in range(len(z_points)):
-    v_list.append(0)
-    
-A_list = []
-for point in range(len(z_points)):
-    if z_points[point] <= L1:
-        A_list.append(A1)
-    elif z_points[point] <= L1+L2:
-        A_list.append(A2)
-    else:
-        A_list.append(A3)
-t_list = np.arange(0,t_max,dt)
+#plot of initial pressure
+fluid_elements.plot(x='zloc',y='press')
 
 
-##
-  
-plt.plot(z_points,P_list)
-plt.show()
-##actual sim
- 
-massflux_list = []
-for point in range(len(z_points)):
-    massflux_list.append(0)  
-#mass_list = []
-#for point in range(len(z_points)):
-#    mass_list.append(cantera_list[point].density * A_list[point] * dz)  
-for point in range(len(z_points)-1):
-    ##acceleration of fluid body due to pressure difference
-    dP = cantera_list[point].P - cantera_list[point+1].P
-    
-#    momentum change is due to impulse -> d(mv) = F* dt
-    mv = dP * A_list[point] *dt
-#    v_new = v_old + momentum change / mass
-    v_list[point] = v_list[point] + mv / (cantera_list[point].density * A_list[point] * dz)
+#1-d sim
 
 
 
-  
-plt.plot(z_points,P_list)
-plt.show()
+
+
+
+
+
+
+
+#plot of final press
+#fluid_elements.plot(x='zloc',y='press')
+
+
+
+
+
+
 
 
 
