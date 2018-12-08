@@ -106,30 +106,7 @@ for point in range(len(z_points)-1):
 #    v_new = v_old + momentum change / mass
     v_list[point] = v_list[point] + mv / (cantera_list[point].density * A_list[point] * dz)
 
-    #to do: account for different areas
-    #isentropic expansion (aka polytropic with n = k)
-    #new_cantera = f(old_entropy, new specific volume)
-    cantera_list[point].SV = cantera_list[point].s, ((dz+v_list[point]*dt)*A_list[point]/(cantera_list[point].density * A_list[point] * dz))
-    
-    #mass flux due to velocity
-    try:
-        vdt = v_list[point] * dt
-        if vdt>0:
-            print(vdt)
-        if np.ceil(vdt)>0:
-            for i in range(np.floor(vdt)):
-                massflux_list[point+i] += cantera_list[point].density* A_list[point]* dz
-            massflux_list[point + np.ceil(vdt)] = (vdt - np.floor(vdt)) * cantera_list[point].density* A_list[point]* dz
-        elif np.ceil(vdt)<0:
-            vdt = -vdt
-            for i in range(np.floor(vdt)):
-                massflux_list[point-i] += cantera_list[point].density* A_list[point]* dz
-            massflux_list[point - np.ceil(vdt)] = (vdt - np.floor(vdt)) * cantera_list[point].density* A_list[point]* dz
-    except:
-        pass
-for point in range(len(z_points)-1):
-    cantera_list[point].SV = cantera_list[point].s, (dz*A_list[point]/(cantera_list[point].density * A_list[point] * dz + massflux_list[point]))
-    P_list[point] = cantera_list[point].P
+
 
   
 plt.plot(z_points,P_list)
